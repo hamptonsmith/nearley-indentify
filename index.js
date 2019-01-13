@@ -90,15 +90,7 @@ module.exports = class {
     }
     
     formatError(token, message) {
-        if (token.type === 'eol' || token.type === 'indent' ||
-                token.type === 'dedent') {
-            message = this.baseLexer.formatError(token.baseToken, message);
-        }
-        else {
-            message = this.baseLexer.formatError(token, message);
-        }
-
-        return message;
+        return this.baseLexer.formatError(token, message);
     }
     
     has(name) {

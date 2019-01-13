@@ -91,41 +91,6 @@ const tests = [
         }
     },
     {
-        label: 'owned tokens pass base',
-        tokens: [
-            'eol', 'indent', 'dedent'
-        ],
-        runner: (test) => {
-            let baseFormatErrorArg;
-            let lexer = new IndentifyLexer({
-                formatError: (arg, message) => {
-                    baseFormatErrorArg = [arg, message];
-                }
-            }, {
-                controlTokenRecognizer: recognizer
-            });
-            
-            const result = [];
-            test.tokens.forEach((token, index) => {
-                lexer.formatError({
-                    type: token,
-                    baseToken: 'baseToken' + index
-                }, 'message' + index);
-                
-                result.push(baseFormatErrorArg);
-            });
-            
-            return result;
-        },
-        assertions: results => {
-            assert.deepEqual(results, [
-                ['baseToken0', 'message0'],
-                ['baseToken1', 'message1'],
-                ['baseToken2', 'message2']
-            ]);
-        }
-    },
-    {
         label: 'no options no problem',
         runner: (test) => {
             new IndentifyLexer(baseLex);
