@@ -1,0 +1,37 @@
+{
+  "name": "@shieldsbetter/nearley-indentify",
+  "version": "0.0.1",
+  "description": "Adapts Nearley-compatible lexers to generate indent/dedent events.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "clone": "^2.1.2",
+    "dedent-js": "^1.0.1",
+    "moo": "^0.5.0",
+    "nyc": "^13.1.0"
+  },
+  "devDependencies": {
+    "@shieldsbetter/sbtest": "0.0.2"
+  },
+  "scripts": {
+    "test": "nyc node ./test/tests.js",
+    "coverage": "nyc -r html node ./test/tests.js && xdg-open coverage/index.html"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/hamptonsmith/nearley-indentify"
+  },
+  "keywords": [
+    "nearley",
+    "moo",
+    "lex",
+    "lexer",
+    "indent",
+    "dedent",
+    "indent-aware"
+  ],
+  "author": "Hampton Smith",
+  "license": "ISC"
+}
