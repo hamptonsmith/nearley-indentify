@@ -124,6 +124,12 @@ const tests = [
                 ['baseToken2', 'message2']
             ]);
         }
+    },
+    {
+        label: 'no options no problem',
+        runner: (test) => {
+            new IndentifyLexer(baseLex);
+        }
     }
 ];
 
