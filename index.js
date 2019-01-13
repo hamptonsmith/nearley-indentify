@@ -70,7 +70,9 @@ module.exports = class {
             baseState: this.baseLexer.save(),
             indentStack: this.indentStack.slice(),
             tokenQueue: this.tokenQueue.slice(),
-            beginningOfLine: this.beginningOfLine
+            beginningOfLine: this.beginningOfLine,
+            lastRealToken: this.lastRealToken,
+            done: this.done
         };
     }
     
@@ -79,7 +81,9 @@ module.exports = class {
             baseState: undefined,
             indentStack: [],
             tokenQueue: [],
-            beginningOfLine: true
+            beginningOfLine: true,
+            lastRealToken: undefined,
+            done: false
         };
     
         this.baseLexer.reset(chunk, info.baseState);
@@ -87,6 +91,8 @@ module.exports = class {
         this.indentStack = info.indentStack;
         this.tokenQueue = info.tokenQueue;
         this.beginningOfLine = info.beginningOfLine;
+        this.lastRealToken = info.lastRealToken;
+        this.done = info.done;
     }
     
     formatError(token, message) {
