@@ -14,23 +14,9 @@ const baseLex = moo.compile({
 
 const testCases = [
     {
-        label: 'no tokens (default default token)',
+        label: 'no tokens (default empty line strategy)',
         input: ``,
-        output: `
-            eol
-        `
-    },
-    {
-        label: 'no tokens (non-default default token)',
-        input: ``,
-        defaultToken: { foo: 'bar', value: 'asdf' },
-        output: [
-            {
-                foo: 'bar',
-                type: 'eol',
-                value: 'asdf'
-            }
-        ]
+        output: ``
     },
     {
         label: 'internal indents passed along',
@@ -129,31 +115,43 @@ const testCases = [
         output: `
             blah eol
             indent blah eol
-            eol
-            eol
-            eol
-            eol
             dedent blah eol
         `
     },
     {
-        label: 'whitespace final line gets eol',
+        label: 'whitespace final line gets no eol (default empty line strat)',
         input: `
             blah
             -->
         `,
         output: `
             blah eol
-            eol
         `
     },
     {
-        label: 'empty final line gets eol',
+        label: 'empty final line gets no eol (default empty line strat)',
         input: `
             blah
             
         `,
         output: `
+            blah eol
+        `
+    },
+    {
+        label: 'custom empty line strategy',
+        input: `
+            blah
+            
+            blah
+            
+        `,
+        emptyLineStrategy: (token, emit) => {
+            emit({ type: 'eol' });
+        },
+        output: `
+            blah eol
+            eol
             blah eol
             eol
         `
@@ -277,7 +275,7 @@ sbtest({
                 {
                     controlTokenRecognizer: ('controlTokenRecognizer' in test) ?
                             test.controlTokenRecognizer : recognizer,
-                    defaultToken: test.defaultToken
+                    emptyLineStrategy: test.emptyLineStrategy
                 });
         
         lexer.reset(dedentedTestInput);
