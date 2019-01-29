@@ -23,7 +23,7 @@ module.exports = class {
                 [ new module.exports.ConsistentIndentEnforcer() ];
         
         this.determineIndentLevel = determineIndentLevel ||
-                ((stack, asString) => asString.length);
+                ((asString, tokens) => asString.length);
         
         this.emptyLineStrategy = emptyLineStrategy || (() => {});
         
@@ -148,7 +148,7 @@ module.exports = class {
                         // We haven't found a non-whitespace token to trigger
                         // this, so let's take care of it now.
                         this.lineListeners.forEach(l => {
-                            l.onLine(this.curIndent, this.indentTokens,
+                            l.onLine(this.indentTokens, this.curIndent,
                                     latestToken, 'newline');
                         });
                     }
@@ -212,7 +212,7 @@ module.exports = class {
                         // We haven't found a non-whitespace token to trigger
                         // this, so let's take care of it now.
                         this.lineListeners.forEach(l => {
-                            l.onLine(this.curIndent, this.indentTokens,
+                            l.onLine(this.indentTokens, this.curIndent,
                                     undefined, undefined);
                         });
                         
@@ -243,13 +243,13 @@ module.exports = class {
             // curIndent is irrelevant.
             
             const curIndentLevel =
-                    this.determineIndentLevel(lineIndentTokens, this.curIndent);
+                    this.determineIndentLevel(this.curIndent, lineIndentTokens);
             
             if (this.parseState === 'indent') {
                 // We need to do indent bookkeeping.
 
                 this.lineListeners.forEach(l => {
-                    l.onLine(this.curIndent, this.indentTokens,
+                    l.onLine(this.indentTokens, this.curIndent,
                             latestToken, controlTokenType);
                 });
             
@@ -325,7 +325,7 @@ module.exports.ConsistentIndentEnforcer = class {
         this.lastIndent = '';
     }
     
-    onLine(indentString, indentTokens, indentBreakingToken, ibtType) {
+    onLine(indentTokens, indentString, indentBreakingToken, ibtType) {
         if (indentBreakingToken !== undefined && ibtType !== 'newline') {
             if (indentString.length > this.lastIndent.length) {
                 if (!indentString.startsWith(this.lastIndent)) {

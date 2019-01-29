@@ -133,28 +133,28 @@ const tests = [
         assertions: [
             ([...calls]) => {
                 const expectedValues = [
-                    ['', [], 'blah', undefined],
-                    ['-->', ['-->'], 'blah', undefined],
-                    ['-->-->', ['-->', '-->'], 'blah', undefined],
-                    ['-->', ['-->'], '\n', 'newline'],
-                    ['-->', ['-->'], 'blah', undefined],
-                    ['', [], '\n', 'newline'],
-                    ['', [], 'blah', undefined],
-                    ['', [], undefined, undefined]
+                    [[], '', 'blah', undefined],
+                    [['-->'], '-->', 'blah', undefined],
+                    [['-->', '-->'], '-->-->', 'blah', undefined],
+                    [['-->'], '-->', '\n', 'newline'],
+                    [['-->'], '-->', 'blah', undefined],
+                    [[], '', '\n', 'newline'],
+                    [[], '', 'blah', undefined],
+                    [[], '', undefined, undefined]
                 ];
                 
                 assert.equal(calls.length, expectedValues.length,
                         'onLine() call count');
                 
                 for (let i = 0; i < expectedValues.length; i++) {
-                    assert.equal(calls[i][0], expectedValues[i][0],
-                            `line ${i} token string incorrect`);
-                    
-                    for (let j = 0; j < expectedValues[i][1].length; j++) {
+                    for (let j = 0; j < expectedValues[i][0].length; j++) {
                         assert.equal(
-                                calls[i][1][j].value, expectedValues[i][1][j],
+                                calls[i][0][j].value, expectedValues[i][0][j],
                                 `line ${i} indent token ${j} incorrect`);
                     }
+        
+                    assert.equal(calls[i][1], expectedValues[i][1],
+                            `line ${i} token string incorrect`);
                     
                     if (expectedValues[i][2] === undefined) {
                         assert.equal(calls[i][2], undefined,
@@ -175,32 +175,32 @@ const tests = [
         label: 'ConsistentIndentEnforcer normal indent',
         runner: () => {
             const enforcer = new IndentifyLexer.ConsistentIndentEnforcer();
-            enforcer.onLine('abc', [], ['something']);
-            enforcer.onLine('abcd', [], ['something']);
+            enforcer.onLine([{value:'abc'}], 'abc', 'something', undefined);
+            enforcer.onLine([{value:'abcd'}], 'abcd', 'something', undefined);
         }
     },
     {
         label: 'ConsistentIndentEnforcer normal dedent',
         runner: () => {
             const enforcer = new IndentifyLexer.ConsistentIndentEnforcer();
-            enforcer.onLine('abc', [], ['something']);
-            enforcer.onLine('ab', [], ['something']);
+            enforcer.onLine([{value:'abc'}], 'abc', 'something', undefined);
+            enforcer.onLine([{value:'ab'}], 'ab', 'something', undefined);
         }
     },
     {
         label: 'ConsistentIndentEnforcer normal same-dent',
         runner: () => {
             const enforcer = new IndentifyLexer.ConsistentIndentEnforcer();
-            enforcer.onLine('abc', [], ['something']);
-            enforcer.onLine('abc', [], ['something']);
+            enforcer.onLine([{value:'abc'}], 'abc', 'something', undefined);
+            enforcer.onLine([{value:'abc'}], 'abc', 'something', undefined);
         }
     },
     {
         label: 'ConsistentIndentEnforcer indent doesn\'t have prefix',
         runner: () => {
             const enforcer = new IndentifyLexer.ConsistentIndentEnforcer();
-            enforcer.onLine('abc', [], 'something', undefined);
-            enforcer.onLine('abxd', [], 'something', undefined);
+            enforcer.onLine([{value:'abc'}], 'abc', 'something', undefined);
+            enforcer.onLine([{value:'abxd'}], 'abxd', 'something', undefined);
         },
         errorAssertions: [
             errorWithMessageIncluding('inconsistent')
@@ -210,8 +210,8 @@ const tests = [
         label: 'ConsistentIndentEnforcer dedent doesn\'t have prefix',
         runner: () => {
             const enforcer = new IndentifyLexer.ConsistentIndentEnforcer();
-            enforcer.onLine('abc', [], ['something']);
-            enforcer.onLine('ax', [], ['something']);
+            enforcer.onLine([{value:'abc'}], 'abc', 'something', undefined);
+            enforcer.onLine([{value:'ax'}], 'ax', 'something', undefined);
         },
         errorAssertions: [
             errorWithMessageIncluding('inconsistent')
@@ -221,8 +221,8 @@ const tests = [
         label: 'ConsistentIndentEnforcer same-dent not the same',
         runner: () => {
             const enforcer = new IndentifyLexer.ConsistentIndentEnforcer();
-            enforcer.onLine('abc', [], ['something']);
-            enforcer.onLine('abd', [], ['something']);
+            enforcer.onLine([{value:'abc'}], 'abc', 'something', undefined);
+            enforcer.onLine([{value:'abd'}], 'abd', 'something', undefined);
         },
         errorAssertions: [
             errorWithMessageIncluding('inconsistent')
