@@ -7,7 +7,9 @@ module.exports = class {
         let {
             controlTokenRecognizer,
             emptyLineStrategy,
-            tokenBuilder
+            tokenBuilder,
+            determineIndentLevel,
+            lineListeners
         } = (options || {});
         
         this.tokenBuilder = tokenBuilder || ((type, value, base) => {
@@ -16,6 +18,12 @@ module.exports = class {
             token.value = value;
             return token;
         });
+        
+        this.lineListeners = lineListeners ||
+                [ new module.exports.ConsistentIndentEnforcer() ];
+        
+        this.determineIndentLevel = determineIndentLevel ||
+                ((stack, asString) => asString.length);
         
         this.emptyLineStrategy = emptyLineStrategy || (() => {});
         
@@ -39,6 +47,8 @@ module.exports = class {
         this.indentStack = [];
         this.tokenQueue = [];
         this.parseState = 'indent';
+        this.indentTokens = [];
+        this.curIndent = '';
     }
     
     next() {
@@ -61,7 +71,9 @@ module.exports = class {
             tokenQueue: this.tokenQueue.slice(),
             parseState: this.parseState,
             lastRealToken: this.lastRealToken,
-            done: this.done
+            done: this.done,
+            indentTokens: this.indentTokens.slice(),
+            curIndent: this.curIndent
         };
     }
     
@@ -72,16 +84,20 @@ module.exports = class {
             tokenQueue: [],
             parseState: 'indent',
             lastRealToken: undefined,
-            done: false
+            done: false,
+            indentTokens: [],
+            curIndent: ''
         };
     
         this.baseLexer.reset(chunk, info.baseState);
         
-        this.indentStack = info.indentStack;
-        this.tokenQueue = info.tokenQueue;
+        this.indentStack = info.indentStack.slice();
+        this.tokenQueue = info.tokenQueue.slice();
         this.parseState = info.parseState;
         this.lastRealToken = info.lastRealToken;
         this.done = info.done;
+        this.indentTokens = info.indentTokens.slice();
+        this.curIndent = info.curIndent;
     }
     
     formatError(token, message) {
@@ -94,6 +110,8 @@ module.exports = class {
     }
     
     readyMoreTokens() {
+        // We're guaranteed not to be in the middle of an indent block.
+    
         let latestToken = this.baseLexer.next();
         
         if (latestToken) {
@@ -101,13 +119,16 @@ module.exports = class {
         }
         
         let controlTokenType = this.controlTokenRecognizer(latestToken);
-    
-        let curIndent = '';
+        
+        let lineIndentTokens = [];
         while (latestToken !== undefined && controlTokenType !== undefined) {
             switch (controlTokenType) {
                 case 'indent': {
                     if (this.parseState === 'indent') {
-                        curIndent += latestToken.value;
+                        lineIndentTokens.push(latestToken);
+                        this.curIndent += latestToken.value;
+                        
+                        this.indentTokens.push(latestToken);
                     }
                     else {
                         // Indent token in the middle of a line.  Not
@@ -123,14 +144,24 @@ module.exports = class {
                         this.emptyLineStrategy(latestToken, token => {
                             this.tokenQueue.push(token);
                         });
+                        
+                        // We haven't found a non-whitespace token to trigger
+                        // this, so let's take care of it now.
+                        this.lineListeners.forEach(l => {
+                            l.onLine(this.curIndent, this.indentTokens,
+                                    latestToken, 'newline');
+                        });
                     }
                     else {
                         this.tokenQueue.push(this.tokenBuilder('eol',
                                 this.lastRealToken.value, this.lastRealToken));
                     }
                     
+                    this.indentTokens = [];
+                    
+                    lineIndentTokens = [];
                     this.parseState = 'indent';
-                    curIndent = '';
+                    this.curIndent = '';
                     
                     break;
                 }
@@ -167,6 +198,9 @@ module.exports = class {
                     case 'content': {
                         this.tokenQueue.push(this.tokenBuilder('eol',
                                 this.lastRealToken.value, this.lastRealToken));
+
+                        this.indentTokens = [];
+                        
                         break;
                     }
                     case 'indent': {
@@ -174,6 +208,14 @@ module.exports = class {
                         this.emptyLineStrategy(latestToken, token => {
                             this.tokenQueue.push(token);
                         });
+                        
+                        // We haven't found a non-whitespace token to trigger
+                        // this, so let's take care of it now.
+                        this.lineListeners.forEach(l => {
+                            l.onLine(this.curIndent, this.indentTokens,
+                                    undefined, undefined);
+                        });
+                        
                         break;
                     }
                     /* istanbul ignore next : this would be a programming
@@ -189,30 +231,43 @@ module.exports = class {
             
             // Clean up any indentation levels.
             while (this.indentStack.length > 1) {
-                const dedentValue = this.indentStack.pop();
+                this.indentStack.pop();
                 this.tokenQueue.push(this.tokenBuilder('dedent',
-                        peek(this.indentStack), this.lastRealToken));
+                        peek(this.indentStack).indent, this.lastRealToken));
             }
         }
         else {
             // Some non-indent, non-newline character.  If parse state is
             // 'indent', we're the first token of the line and curIndent is our
             // indent level.  Otherwise, we're some middle-of-line token and
-            // curToken is irrelevant.
+            // curIndent is irrelevant.
+            
+            const curIndentLevel =
+                    this.determineIndentLevel(lineIndentTokens, this.curIndent);
             
             if (this.parseState === 'indent') {
                 // We need to do indent bookkeeping.
+
+                this.lineListeners.forEach(l => {
+                    l.onLine(this.curIndent, this.indentTokens,
+                            latestToken, controlTokenType);
+                });
             
                 if (this.indentStack.length === 0) {
                     // We've yet to establish an indent level.  Let's do that.
-                    this.indentStack.push(curIndent);
+                    this.indentStack.push({
+                        level: curIndentLevel,
+                        indent: this.curIndent
+                    });
                 }
                 else {
                     // We have an established indent level.  Let's emit
                     // appropriate indent/dedent/newline events.
-                    let establishedIndent = peek(this.indentStack);
-                    if (curIndent.length < establishedIndent.length) {
-                        while (peek(this.indentStack) !== curIndent) {
+                    let establishedIndentLevel = peek(this.indentStack).level;
+                    
+                    if (curIndentLevel < establishedIndentLevel) {
+                        while (peek(this.indentStack).level !==
+                                curIndentLevel) {
                             this.indentStack.pop();
                             
                             if (this.indentStack.length === 0) {
@@ -220,23 +275,17 @@ module.exports = class {
                             }
                             
                             this.tokenQueue.push(this.tokenBuilder(
-                                    'dedent', curIndent, latestToken));
+                                    'dedent', this.curIndent, latestToken));
                         }
                     }
-                    else if (curIndent.length > establishedIndent.length) {
-                        if (!curIndent.startsWith(establishedIndent)) {
-                            throw new Error('Inconsistent indent.');
-                        }
-                        
-                        this.indentStack.push(curIndent);
+                    else if (curIndentLevel > establishedIndentLevel) {
+                        this.indentStack.push({
+                            level: curIndentLevel,
+                            indent: this.curIndent
+                        });
                         
                         this.tokenQueue.push(this.tokenBuilder(
-                                'indent', curIndent, latestToken));
-                    }
-                    else {
-                        if (curIndent !== establishedIndent) {
-                            throw new Error('Inconsistent indent.');
-                        }
+                                'indent', this.curIndent, latestToken));
                     }
                 }
             }
@@ -245,8 +294,8 @@ module.exports = class {
             // token itself.
             this.tokenQueue.push(latestToken);
             
-            // Having found a non-newline token, we're no longer at the
-            // beginning of the line.
+            // Having found a non-indent, non-newline token, we're now in the
+            // content part of the line.
             this.parseState = 'content';
         }
     }
@@ -271,3 +320,25 @@ function defaultControlTokenRecognizer(token) {
     return result;
 }
 
+module.exports.ConsistentIndentEnforcer = class {
+    constructor() {
+        this.lastIndent = '';
+    }
+    
+    onLine(indentString, indentTokens, indentBreakingToken, ibtType) {
+        if (indentBreakingToken !== undefined && ibtType !== 'newline') {
+            if (indentString.length > this.lastIndent.length) {
+                if (!indentString.startsWith(this.lastIndent)) {
+                    throw new Error('Inconsistent indent.');
+                }
+            }
+            else {
+                if (!this.lastIndent.startsWith(indentString)) {
+                    throw new Error('Inconsistent indent.');
+                }
+            }
+            
+            this.lastIndent = indentString;
+        }
+    }
+};

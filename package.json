@@ -13,15 +13,17 @@
     "nyc": "^13.1.0"
   },
   "devDependencies": {
-    "@shieldsbetter/sbtest": "0.0.2"
+    "@shieldsbetter/sbtest": "0.0.2",
+    "jshint": "^2.9.7"
   },
   "scripts": {
-    "test": "nyc node ./test/tests.js",
-    "coverage": "nyc -r html node ./test/tests.js && xdg-open coverage/index.html"
+    "test": "node ./test/tests.js",
+    "coverage": "nyc -r html node ./test/tests.js && xdg-open coverage/index.html",
+    "jshint": "jshint index.js"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/hamptonsmith/nearley-indentify"
+    "type": "git",
+    "url": "https://github.com/hamptonsmith/nearley-indentify"
   },
   "keywords": [
     "nearley",
@@ -33,5 +35,9 @@
     "indent-aware"
   ],
   "author": "Hampton Smith",
-  "license": "ISC"
+  "license": "ISC",
+  "jshintConfig": {
+    "node": true,
+    "esversion": 6
+  }
 }

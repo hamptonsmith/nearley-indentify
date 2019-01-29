@@ -166,40 +166,6 @@ const testCases = [
         errorAssertions: errorWithMessageIncluding('unknown type')
     },
     {
-        label: 'dedent to inconsistent level',
-        input: `
-            blah
-            -->-->blah
-            -->blah
-        `,
-        errorAssertions: errorWithMessageIncluding('inconsistent')
-    },
-    {
-        label: 'dedent with inconsistent indent prefix',
-        input: `
-            -->blah
-            -->-->blah
-            ==>blah
-        `,
-        errorAssertions: errorWithMessageIncluding('inconsistent')
-    },
-    {
-        label: 'indent with inconsistent indent prefix',
-        input: `
-            -->blah
-            ==>-->blah
-        `,
-        errorAssertions: errorWithMessageIncluding('inconsistent')
-    },
-    {
-        label: 'newline with inconsistent indent prefix',
-        input: `
-            -->blah
-            ==>blah
-        `,
-        errorAssertions: errorWithMessageIncluding('inconsistent')
-    },
-    {
         label: 'default control token recognizer',
         controlTokenRecognizer: undefined,
         baseLex: moo.compile({
@@ -217,6 +183,15 @@ const testCases = [
             indent word eol
             dedent word eol
         `
+    },
+    {
+        label: 'dedent to non-existent level',
+        input: `
+            blah
+            -->-->blah
+            -->blah
+        `,
+        errorAssertions: errorWithMessageIncluding('inconsistent')
     }
 ];
 
