@@ -136,4 +136,4 @@ Available options are:
   }
   ```
   
-  Where `clone()` is the npm package `clone`.
+  Where `clone()` is [`clone`](https://www.npmjs.com/package/clone).
