@@ -23,7 +23,7 @@ module.exports = class {
                 [ new module.exports.ConsistentIndentEnforcer() ];
         
         this.determineIndentLevel = determineIndentLevel ||
-                ((asString, tokens) => asString.length);
+                ((tokens, asString) => asString.length);
         
         this.emptyLineStrategy = emptyLineStrategy || (() => {});
         
@@ -120,14 +120,11 @@ module.exports = class {
         
         let controlTokenType = this.controlTokenRecognizer(latestToken);
         
-        let lineIndentTokens = [];
         while (latestToken !== undefined && controlTokenType !== undefined) {
             switch (controlTokenType) {
                 case 'indent': {
                     if (this.parseState === 'indent') {
-                        lineIndentTokens.push(latestToken);
                         this.curIndent += latestToken.value;
-                        
                         this.indentTokens.push(latestToken);
                     }
                     else {
@@ -159,7 +156,6 @@ module.exports = class {
                     
                     this.indentTokens = [];
                     
-                    lineIndentTokens = [];
                     this.parseState = 'indent';
                     this.curIndent = '';
                     
@@ -243,7 +239,10 @@ module.exports = class {
             // curIndent is irrelevant.
             
             const curIndentLevel =
-                    this.determineIndentLevel(this.curIndent, lineIndentTokens);
+                    this.determineIndentLevel(this.indentTokens, this.curIndent,
+                            latestToken,
+                            this.indentStack.length === 0 ? undefined :
+                                    peek(this.indentStack).level);
             
             if (this.parseState === 'indent') {
                 // We need to do indent bookkeeping.
@@ -305,8 +304,8 @@ function peek(a) {
     return a[a.length - 1];
 }
 
-const defaultIndentRegexp = /^[\t ]+$/;
-const defaultNewlineRegexp = /^(?:\n|\r\n)+$/;
+const defaultIndentRegexp = /^[ \t]+$/;
+const defaultNewlineRegexp = /^[\n\r]+$/;
 function defaultControlTokenRecognizer(token) {
     let result;
     

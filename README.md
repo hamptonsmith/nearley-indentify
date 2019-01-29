@@ -56,8 +56,9 @@ Available options are:
   token or `/[\n\r]+/` for a newline token, with anything else representing a
   non-control-token.
 * `determineIndentationLevel` - a
-  `(indentTokens, indentAsString) => indentLevel` function that determines the
-  numerical indentation "deepness" of a given line.
+  `(indentTokens, indentAsString, indentBreakingToken, previousLevel) =>
+  indentLevel` function that determines the numerical indentation depth of
+  a given non-empty line.
   
   The first parameter, `indentTokens`, will be an array of contiguous
   `"indent"`-type tokens as returned from the base lexer that form the
@@ -67,11 +68,24 @@ Available options are:
   Nearley-specified `value` field of each of the tokens in `indentTokens`; i.e.:
   `indentTokens.map(t => t.value).reduce((accum, val) => accum + val, '')`.
   
-  The return value should be a number representing the deepness of the indent of
+  The third parameter, `indentBreakingToken` will be the first non-indent token
+  of the line.
+  
+  The fourth parameter, `previousLevel` will be a number indicating the
+  indentation level of the previous non-empty line (and thus our currrent
+  operating depth) as we parse this line, or `undefined` if we're encountering
+  the first non-empty line and no indentation depth has yet been established.
+  This can be useful when one wishes to ignore the actual indent prefix of the
+  line and instead "force" the line to exist at a deeper, shallower, or the same
+  level relative to the current operating level, as for example if comment lines
+  should always exist at the current indent level regardless of their actual
+  indentation.
+  
+  The return value should be a number representing the depth of the indent of
   the line.  Indent levels need not be integers nor contiguous.  The only
   requirements are that equivalent levels of indent yield the same number,
   "deeper" levels of indent yield numbers greater than "shallower" levels, and
-  "shallower" levels of indent yield numbers less than "greater" levels.
+  "shallower" levels of indent yield numbers less than "deeper" levels.
 * `emptyLineStrategy` - a `(newlineToken, emit) => {}` strategy to be executed
   upon encountering an empty line.  `newlineToken` will be the base token as
   returned from the wrapped lexer that triggered the end of line, or
