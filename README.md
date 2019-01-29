@@ -7,8 +7,51 @@ lexers such as [moo](https://www.npmjs.com/package/moo) to emit `indent` and
 ## Basic Usage
 
 ```javascript
-const IndentifyLexer = require('@shieldsbetter/indentify-lexer');
-const indentAwareLexer = new IndentifyLexer(existingLexer);
+const IndentifyLexer = require('@shieldsbetter/nearley-indentify');
+const moo = require('moo');
+
+const baseLexer = moo.compile({
+    ws: /[ \t]+/,
+    nonws: /[^ \t\n]+/,
+    newline: { match: /\n/, lineBreaks: true }
+});
+
+const indentAwareLexer = new IndentifyLexer(baseLexer);
+
+indentAwareLexer.reset(`
+    Hello World!
+        Here's some
+        indentation
+    And dedentation
+`);
+
+let token = indentAwareLexer.next();
+while (token) {
+    console.log({ type: token.type, value: token.value } );
+    
+    token = indentAwareLexer.next();
+}
+```
+
+Outputs:
+
+```
+{ type: 'nonws', value: 'Hello' }
+{ type: 'ws', value: ' ' }
+{ type: 'nonws', value: 'World!' }
+{ type: 'eol', value: '\n' }
+{ type: 'indent', value: '        ' }
+{ type: 'nonws', value: 'Here\'s' }
+{ type: 'ws', value: ' ' }
+{ type: 'nonws', value: 'some' }
+{ type: 'eol', value: '\n' }
+{ type: 'nonws', value: 'indentation' }
+{ type: 'eol', value: '\n' }
+{ type: 'dedent', value: '    ' }
+{ type: 'nonws', value: 'And' }
+{ type: 'ws', value: ' ' }
+{ type: 'nonws', value: 'dedentation' }
+{ type: 'eol', value: '\n' }
 ```
 
 Resulting lexers are themselves Nearley-compatible.  Whitespace tokens
@@ -38,7 +81,7 @@ with `options.buildToken`.
 Additional options may be passed during construction via the second constructor
 argument.  For example:
 
-```
+```javascript
 const indentAwareLexer = new IndentifyLexer(existingLexer, {
     determineIndentationLevel: (asString, tokens) => tokens.length
 });
