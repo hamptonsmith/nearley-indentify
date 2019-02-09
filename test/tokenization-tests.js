@@ -1,25 +1,28 @@
-const sbtest = require('@shieldsbetter/sbtest');
+const sbtest = require("@shieldsbetter/sbtest");
 
-const assert = require('assert');
-const dedent = require('dedent-js');
-const IndentifyLexer = require('../index');
-const moo = require('moo');
+const assert = require("assert");
+const dedent = require("dedent-js");
+const IndentifyLexer = require("../index");
+const moo = require("moo");
 
 const baseLex = moo.compile({
-    indentSource: '-->',
-    indentSource2: '==>',
+    indentSource: "-->",
+    indentSource2: "==>",
     blah: /\w+/,
-    newline: { match: /\n/, lineBreaks: true }
+    newline: {
+        match: /\n/,
+        lineBreaks: true
+    }
 });
 
 const testCases = [
     {
-        label: 'no tokens (default empty line strategy)',
+        label: "no tokens (default empty line strategy)",
         input: ``,
         output: ``
     },
     {
-        label: 'internal indents passed along',
+        label: "internal indents passed along",
         input: `
             blah-->blah-->blah
         `,
@@ -28,7 +31,7 @@ const testCases = [
         `
     },
     {
-        label: 'basic indent',
+        label: "basic indent",
         input: `
             blah-->blah
             -->blah-->blah
@@ -43,7 +46,7 @@ const testCases = [
         `
     },
     {
-        label: 'multiple indent tokens are one indent',
+        label: "multiple indent tokens are one indent",
         input: `
             blah
             -->-->blah
@@ -56,7 +59,7 @@ const testCases = [
         `
     },
     {
-        label: 'multiple indent levels',
+        label: "multiple indent levels",
         input: `
             blah
             -->blah
@@ -73,7 +76,7 @@ const testCases = [
         `
     },
     {
-        label: 'dedent through multiple levels',
+        label: "dedent through multiple levels",
         input: `
             blah
             -->blah
@@ -88,7 +91,7 @@ const testCases = [
         `
     },
     {
-        label: 'auto-dedent at end',
+        label: "auto-dedent at end",
         input: `
             blah
             -->blah
@@ -102,7 +105,7 @@ const testCases = [
         `
     },
     {
-        label: 'empty lines belong to last block',
+        label: "empty lines belong to last block",
         input: `
             blah
             -->-->-->blah
@@ -119,7 +122,7 @@ const testCases = [
         `
     },
     {
-        label: 'whitespace final line gets no eol (default empty line strat)',
+        label: "whitespace final line gets no eol (default empty line strat)",
         input: `
             blah
             -->
@@ -129,7 +132,7 @@ const testCases = [
         `
     },
     {
-        label: 'empty final line gets no eol (default empty line strat)',
+        label: "empty final line gets no eol (default empty line strat)",
         input: `
             blah
             
@@ -139,7 +142,7 @@ const testCases = [
         `
     },
     {
-        label: 'custom empty line strategy',
+        label: "custom empty line strategy",
         input: `
             blah
             
@@ -147,7 +150,9 @@ const testCases = [
             
         `,
         emptyLineStrategy: (token, emit) => {
-            emit({ type: 'eol' });
+            emit({
+                type: "eol"
+            });
         },
         output: `
             blah eol
@@ -157,21 +162,24 @@ const testCases = [
         `
     },
     {
-        label: 'bad control token type',
+        label: "bad control token type",
         baseLex: moo.compile({
             weird: /\w+/,
-            space: ' '
+            space: " "
         }),
         input: `blah blah`,
-        errorAssertions: errorWithMessageIncluding('unknown type')
+        errorAssertions: errorWithMessageIncluding("unknown type")
     },
     {
-        label: 'default control token recognizer',
+        label: "default control token recognizer",
         controlTokenRecognizer: undefined,
         baseLex: moo.compile({
             word: /\w+/,
             space: /[ \t]+/,
-            eol: { match: /[\n\r]+/, lineBreaks: true }
+            eol: {
+                match: /[\n\r]+/,
+                lineBreaks: true
+            }
         }),
         input: `
             words words
@@ -185,59 +193,58 @@ const testCases = [
         `
     },
     {
-        label: 'dedent to non-existent level',
+        label: "dedent to non-existent level",
         input: `
             blah
             -->-->blah
             -->blah
         `,
-        errorAssertions: errorWithMessageIncluding('inconsistent')
+        errorAssertions: errorWithMessageIncluding("inconsistent")
     }
 ];
 
 sbtest({
     cases: testCases,
     transformer: test => {
-        if ('output' in test) {
+        if ("output" in test) {
             test.assertions = test.assertions || [];
 
             let expected;
             let check;
 
-            if (typeof test.output === 'string') {
+            if (typeof test.output === "string") {
                 expected = test.output.trim().split(/[ \n]+/);
-                if (expected[0] === '') {
+                if (expected[0] === "") {
                     expected = [];
                 }
-                
+
                 check = (token, expectation) => {
                     assert.equal(token.type, expectation);
                 };
-            }
-            else {
+            } else {
                 expected = test.output;
-                
+
                 check = (token, expectation) => {
                     assert.deepEqual(token, expectation);
-                }
+                };
             }
 
             test.assertions.push(results => {
                 for (let i = 0; i < expected.length; i++) {
                     if (i >= results.length) {
                         throw new assert.AssertionError({
-                            message: 'Expected another token, but found none.',
+                            message: "Expected another token, but found none.",
                             expected: expected[i]
                         });
                     }
-                    
+
                     check(results[i], expected[i]);
                 }
-                
+
                 if (results.length > expected.length) {
                     throw new assert.AssertionError({
                         message:
-                                'Expected end of stream but got another token.',
+                            "Expected end of stream but got another token.",
                         actual: results[expected.length]
                     });
                 }
@@ -246,38 +253,41 @@ sbtest({
     },
     runner: test => {
         const dedentedTestInput = dedent(test.input);
-        const lexer = new IndentifyLexer(test.baseLex || baseLex,
-                {
-                    controlTokenRecognizer: ('controlTokenRecognizer' in test) ?
-                            test.controlTokenRecognizer : recognizer,
-                    emptyLineStrategy: test.emptyLineStrategy
-                });
-        
+        const lexer = new IndentifyLexer(test.baseLex || baseLex, {
+            controlTokenRecognizer:
+                "controlTokenRecognizer" in test
+                    ? test.controlTokenRecognizer
+                    : recognizer,
+            emptyLineStrategy: test.emptyLineStrategy
+        });
+
         lexer.reset(dedentedTestInput);
-        
+
         const results = [];
         let token = lexer.next();
         while (token !== undefined) {
             results.push(token);
             token = lexer.next();
         }
-        
+
         return results;
     }
 });
 
 function recognizer(token) {
     let result;
-    
+
     switch (token.type) {
-        case 'blah': { break; }
-        case 'indentSource': 
-        case 'indentSource2': {
-            result = 'indent';
+        case "blah": {
             break;
         }
-        case 'newline': {
-            result = 'newline';
+        case "indentSource":
+        case "indentSource2": {
+            result = "indent";
+            break;
+        }
+        case "newline": {
+            result = "newline";
             break;
         }
         default: {
@@ -285,7 +295,7 @@ function recognizer(token) {
             break;
         }
     }
-    
+
     return result;
 }
 
@@ -294,10 +304,9 @@ function errorWithMessageIncluding(text) {
         if (!e.message.toLowerCase().includes(text)) {
             throw new assert.AssertionError({
                 message: `Error message did not include "${text}".`,
-                expected: 'text',
+                expected: "text",
                 actual: e.message
             });
         }
     };
 }
-
