@@ -240,7 +240,7 @@ Available options are:
 
 ## Extras
 
-- `IndentifyLexer.ConsistentIndentEnforcer` - a line listeners, suitable to
+- `IndentifyLexer.ConsistentIndentEnforcer` - a line listener, suitable to
   provide to `options.lineListeners`, that enforces consistent indentation
   between lines.
 
