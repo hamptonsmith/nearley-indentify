@@ -1,4 +1,4 @@
-# Nearley-Identify [![Build Status](https://travis-ci.org/hamptonsmith/nearley-indentify.svg?branch=master)](https://travis-ci.org/hamptonsmith/nearley-indentify)
+# Nearley-Identify [![codecov](https://codecov.io/gh/TechnionYP5777/project-name/branch/master/graph/badge.svg)](https://codecov.io/gh/TechnionYP5777/project-name) [![Build Status](https://travis-ci.org/hamptonsmith/nearley-indentify.svg?branch=master)](https://travis-ci.org/hamptonsmith/nearley-indentify)
 
 Adapts existing [Nearley](https://www.npmjs.com/package/nearley)-compatible
 lexers such as [moo](https://www.npmjs.com/package/moo) to emit `indent` and

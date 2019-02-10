@@ -23,6 +23,7 @@
   "scripts": {
     "test": "node ./test/tests.js",
     "coverage": "nyc -r html node ./test/tests.js && xdg-open coverage/index.html",
+    "codecov-coverage": "nyc report --reporter=text-lcov node ./test/tests.js > coverage.lcov && codecov",
     "jshint": "jshint index.js"
   },
   "repository": {
