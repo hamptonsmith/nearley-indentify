@@ -81,22 +81,22 @@ algorithm, which is as follows:
    terminates the conceptual line. The terminating "newline"-type base token (if
    any) is discarded.
 4. For each conceptual line in sequence,
-    1. If the line's content is empty, we call `options.emptyLineStrategy()` and
-       take no further action. By default, this means no tokens are emitted by
-       the indentified lexer and the parser's internal indent level is not
-       changed.
-    2. Otherwise, with a non-empty content,
-       `options.determineIndentationLevel()` will be used to assign a numeric
-       indentation level to the indent prefix, then:
-        1. If no internal indent level has been established, or the numeric
-           indentation level is equal to the established level, the internal
-           indent level will be set to the newly calculated level, then the
-           indentified lexer will simply begin emitting the content of the line,
-           followed by an `eol` token as built by `options.buildToken()`.
-        2. Otherwise, we emit an `indent` token or `dedent` token as built by
-           `options.buildToken()` (for larger indent levels or smaller indent
-           levels, respectively), then set the internal indent level to the new
-           level. Then, we emit the content of the line, followed by an `eol`.
+   1. If the line's content is empty, we call `options.emptyLineStrategy()` and
+      take no further action. By default, this means no tokens are emitted by
+      the indentified lexer and the parser's internal indent level is not
+      changed.
+   2. Otherwise, with a non-empty content, `options.determineIndentationLevel()`
+      will be used to assign a numeric indentation level to the indent prefix,
+      then:
+      1. If no internal indent level has been established, or the numeric
+         indentation level is equal to the established level, the internal
+         indent level will be set to the newly calculated level, then the
+         indentified lexer will simply begin emitting the content of the line,
+         followed by an `eol` token as built by `options.buildToken()`.
+      2. Otherwise, we emit an `indent` token or `dedent` token as built by
+         `options.buildToken()` (for larger indent levels or smaller indent
+         levels, respectively), then set the internal indent level to the new
+         level. Then, we emit the content of the line, followed by an `eol`.
 
 ## Required Base Lexer Interface
 
