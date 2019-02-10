@@ -236,7 +236,7 @@ Available options are:
   };
   ```
 
-  Where `clone()` is [clone](https://www.npmjs.com/package/clone)`clone`.
+  Where `clone()` is [`clone`](https://www.npmjs.com/package/clone).
 
 ## Extras
 
