@@ -1,6 +1,6 @@
 {
   "name": "@shieldsbetter/nearley-indentify",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Adapts Nearley-compatible lexers to generate indent/dedent events.",
   "main": "index.js",
   "directories": {
