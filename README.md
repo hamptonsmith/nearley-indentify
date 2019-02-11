@@ -1,4 +1,4 @@
-# Nearley-Identify [![codecov](https://codecov.io/gh/hamptonsmith/nearley-indentify/branch/master/graph/badge.svg)](https://codecov.io/gh/hamptonsmith/nearley-indentify) [![Build Status](https://travis-ci.org/hamptonsmith/nearley-indentify.svg?branch=master)](https://travis-ci.org/hamptonsmith/nearley-indentify)
+# Nearley-Indentify [![codecov](https://codecov.io/gh/hamptonsmith/nearley-indentify/branch/master/graph/badge.svg)](https://codecov.io/gh/hamptonsmith/nearley-indentify) [![Build Status](https://travis-ci.org/hamptonsmith/nearley-indentify.svg?branch=master)](https://travis-ci.org/hamptonsmith/nearley-indentify)
 
 Adapts existing [Nearley](https://www.npmjs.com/package/nearley)-compatible
 lexers such as [moo](https://www.npmjs.com/package/moo) to emit `indent` and
@@ -101,7 +101,7 @@ algorithm, which is as follows:
 ## Required Base Lexer Interface
 
 Base lexers should conform to the
-[interace expected by Nearley](https://nearley.js.org/docs/tokenizers#custom-lexers).
+[interface expected by Nearley](https://nearley.js.org/docs/tokenizers#custom-lexers).
 Nearley doesn't fully specify how token streams are terminated, but we assume
 moo-like behavior and specify that wrapped lexers must return `undefined` from
 `next()` when there are no further tokens.
