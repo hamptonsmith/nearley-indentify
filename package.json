@@ -1,17 +1,17 @@
 {
   "name": "@shieldsbetter/nearley-indentify",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Adapts Nearley-compatible lexers to generate indent/dedent events.",
   "main": "index.js",
   "directories": {
     "test": "tests"
   },
   "dependencies": {
-    "clone": "^2.1.2",
-    "dedent-js": "^1.0.1"
+    "clone": "^2.1.2"
   },
   "devDependencies": {
     "@shieldsbetter/sbtest": "0.0.2",
+    "dedent-js": "^1.0.1",
     "gulp": "^4.0.0",
     "gulp-format-md": "^2.0.0",
     "gulp-jsbeautifier": "^3.0.0",
@@ -36,8 +36,11 @@
     "lex",
     "lexer",
     "indent",
+    "indentation",
     "dedent",
-    "indent-aware"
+    "indent-aware",
+    "indentation",
+    "indentation-aware"
   ],
   "author": "Hampton Smith",
   "license": "ISC",
