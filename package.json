@@ -7,11 +7,11 @@
     "test": "tests"
   },
   "dependencies": {
-    "clone": "^2.1.2",
-    "codecov": "^3.6.2"
+    "clone": "^2.1.2"
   },
   "devDependencies": {
     "@shieldsbetter/sbtest": "0.0.2",
+    "codecov": "^3.6.2",
     "dedent-js": "^1.0.1",
     "gulp": "^4.0.0",
     "gulp-format-md": "^2.0.0",
