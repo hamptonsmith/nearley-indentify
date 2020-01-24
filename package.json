@@ -1,6 +1,6 @@
 {
   "name": "@shieldsbetter/nearley-indentify",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Adapts Nearley-compatible lexers to generate indent/dedent events.",
   "main": "index.js",
   "directories": {
@@ -18,7 +18,7 @@
     "gulp-prettier": "^2.1.0",
     "jshint": "^2.9.7",
     "moo": "^0.5.0",
-    "nyc": "^13.2.0"
+    "nyc": "^15.0.0"
   },
   "scripts": {
     "test": "node ./test/tests.js",
